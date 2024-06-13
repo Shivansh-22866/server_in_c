@@ -4,11 +4,14 @@
 #include <time.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -34,3 +37,11 @@ int proxy_socket_id;
 pthread_t tid[MAX_CLIENTS];
 sem_t semaphore;
 pthread_mutex_t lock; 
+
+cache_element* head;
+int cache_size;
+
+int main(int argc, char* argv[]) {
+    int client_socketId, client_len;
+    struct sockaddr server_addr, client_addr;
+} 
