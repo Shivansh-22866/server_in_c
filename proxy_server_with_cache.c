@@ -78,10 +78,49 @@ void* thread_fn(void* socketNew) {
         while(pos<size) {
             bzero(response, MAX_BYTES);
             for(int i=0;i<MAX_BYTES;i++) {
-                response[i] = temp->data;
+                response[i] = temp->data[i];
+                pos++;
+            }
+            send(socket, response, MAX_BYTES, 0);
+        }
+        printf("Data retrieved from cache \n");
+        printf("%s\n\n", response);
+    }
+    else if(bytes_send_client > 0) {
+        len = strlen(buffer);
+        ParsedRequest *request = ParsedRequest_create();
+
+        if(ParsedRequest_parse(request, buffer, len) < 0) {
+            printf("parsing failed \n");
+        } else {
+            bzero(buffer, MAX_BYTES);
+            if(!strcmp(request->method, "GET")) {
+                if(request->host && request->path && checkHTTPversion(request->version)==1) {
+                    bytes_send_client = handle_request(socket, request, tempReq);
+                    if(bytes_send_client == -1) {
+                        sendErrorMessage(socket, 500);
+                    }
+                }
+                else {
+                    sendErrorMessage(socket, 500);
+                }
+            }
+            else {
+                printf("This code only supports GET requests");
             }
         }
+        ParsedRequest_destroy(request);
+    } else if(bytes_send_client == 0) {
+        printf("Client disconnected \n");
     }
+    shutdown(socket, SHUT_RDWR);
+    close(socket);
+    free(buffer);
+    sem_post(&semaphore);
+    sem_getvalue(&semaphore, p);
+    printf("Semaphore post value is: %d\n", p);
+    free(tempReq);
+    return NULL;
 }
 
 int main(int argc, char* argv[]) {
